@@ -2,18 +2,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Music, Utensils, LogOut, Settings, ChevronRight, Sparkles, Calendar } from "lucide-react";
+import { Music, Utensils, LogOut, Settings, ChevronRight, Sparkles, Calendar, Clock } from "lucide-react";
 
 export default function HomePage() {
   const [userName, setUserName] = useState("");
   const [role, setRole] = useState("");
-  // 追加: スケジュール用 state
-  const [schedules, setSchedules] = useState([
-    { time: "18:00", title: "開宴・乾杯", desc: "追いコンスタート！" },
-    { time: "18:30", title: "お食事タイム", desc: "寿司とピザが届きます" },
-    { time: "19:30", title: "思い出ムービー", desc: "ハンカチを用意！" },
-    { time: "20:00", title: "プレゼント贈呈", desc: "感謝を込めて" },
-  ]);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,30 +16,6 @@ export default function HomePage() {
         router.push("/login");
         return;
       }
-
-      // DB からスケジュールを取得して state にセット
-      const fetchSchedules = async () => {
-        const { data, error } = await supabase
-          .from("schedules")
-          .select("*")
-          .order("time_start", { ascending: true });
-        if (error) {
-          console.error("fetchSchedules error:", error);
-          return;
-        }
-        if (data && data.length > 0) {
-          // DB のカラム名に合わせてマッピングが必要ならここで調整
-          setSchedules(
-            data.map((r: any) => ({
-              time: r.time_start ?? r.time ?? "",
-              title: r.title ?? "",
-              desc: r.desc ?? r.description ?? "",
-            }))
-          );
-        }
-      };
-
-      await fetchSchedules();
 
       const { data } = await supabase
         .from("members")
@@ -68,6 +37,14 @@ export default function HomePage() {
   };
 
   const isAdmin = role === "admin";
+
+  // スケジュールデータ（ここを書き換えるだけでOK！）
+  const schedules = [
+    { time: "18:00", title: "開宴・乾杯", desc: "追いコンスタート！" },
+    { time: "18:30", title: "お食事タイム", desc: "寿司とピザが届きます" },
+    { time: "19:30", title: "思い出ムービー", desc: "ハンカチを用意！" },
+    { time: "20:00", title: "プレゼント贈呈", desc: "感謝を込めて" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#fdf8f6] pb-20">
@@ -109,7 +86,7 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* --- タイムスケジュールエリア --- */}
+        {/* --- タイムスケジュールエリア (追加箇所) --- */}
         <section className="bg-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 border border-slate-50">
           <div className="flex items-center justify-between mb-6 px-2">
             <h2 className="text-xs font-black text-slate-800 flex items-center gap-2 tracking-widest">
